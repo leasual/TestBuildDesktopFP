@@ -1,6 +1,7 @@
 from flet import *
 
 from src.constants.constants import *
+from src.database.databases import User
 
 
 class LoginPage(Container):
@@ -90,6 +91,7 @@ class LoginPage(Container):
                     Container(
                         content=IconButton(icon=icons.ARROW_CIRCLE_RIGHT, icon_size=60,
                                            on_click=lambda _: (
+                                               User.saveUser(password='345678', token='33434', ipaddress='localhost'),
                                                self.page.go('/group')
                                            )),
                     )
