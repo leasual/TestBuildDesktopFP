@@ -1,16 +1,20 @@
+import asyncio
+
 from flet import *
 
 from src.constants.constants import *
 from src.database.databases import User
+from src.ui.login.login_viewmodel import LoginViewModel
 
 
 class LoginPage(Container):
 
     def __init__(self, page: Page):
         super().__init__()
+        self.view_model = LoginViewModel()
         page.padding = 0
         self.expand = True
-        self.bgcolor = cl_background
+        self.bgcolor = colors.WHITE
         self.alignment = alignment.center
         self.error_border = border.all(width=1, color='red')
         page.on_error = lambda e: print("Page error:", e.data)
