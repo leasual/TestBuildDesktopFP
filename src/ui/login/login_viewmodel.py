@@ -1,9 +1,7 @@
-import asyncio
+
 import aiohttp
-
-from src.network.API import API
-from src.network.model import Gateway
-
+import asyncio
+import flet as ft
 
 # documents https://www.twilio.com/blog/asynchronous-http-requests-in-python-with-aiohttp
 # content = """[{"id": "E0:69:78:58:22:A4:32:CE","internalipaddress": "192.168.192.34","internalport": "8080",
@@ -12,27 +10,27 @@ from src.network.model import Gateway
 
 class LoginViewModel:
 
-    async def searchGateway(self, function):
-        async with aiohttp.ClientSession() as session:
-            while not self.cancelSearch:
-                future = asyncio.ensure_future(API.searchGateway(session, "https://phoscon.de/discover"))
-                result = await future
-                future.add_done_callback(function)
-                await asyncio.sleep(1)
+    async def searchGateway(self, ):
+        try:
+            async with aiohttp.ClientSession() as session:
+                while not self.cancelSearch:
+                    # API.searchGateway(session, "https://phoscon.de/discover")
+                    async with session.get("https://phoscon.de/discover") as resp:
+                        gateways = await resp.json()
+                        print("gateways= {}".format(gateways))
+                        if len(gateways) == 0:
+                            print("gateway size= {}", len(gateways))
+                            self.serverIP = "192.168.31.130"
+                            self.page.pubsub.send_all(f"{self.serverIP}")
+                        else:
+                            self.cancelSearch = True
+                            for gateway in gateways:
+                                print("gateway= {}".format(gateway))
+                    await asyncio.sleep(1)
+        except:
+            print("search gateway error")
 
-    def taskCallback(self, gateways):
-        print("task callback")
-        # print("gateway size= {} cancel= {}".format(len(gateways), self.cancelSearch))
-        # if len(gateways) != 0:
-        #     self.cancelSearch = True
-        # else:
-        #     for model in gateways:
-        #         print("model json= {}".format(model))
-        #         gateway = Gateway(**model)
-        #         print("gateway {}".format(gateway))
-
-    def __init__(self, cancelSearch: bool = False):
-        self.cancelSearch = cancelSearch
-        print("init login viewmodel")
-        asyncio.run(self.searchGateway(self.taskCallback))
-        print("execute request by asyncio")
+    def __init__(self, page: ft.Page):
+        self.cancelSearch = False
+        self.serverIP = ''
+        self.page = page

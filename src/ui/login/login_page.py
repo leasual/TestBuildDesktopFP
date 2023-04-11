@@ -9,9 +9,27 @@ from src.ui.login.login_viewmodel import LoginViewModel
 
 class LoginPage(Container):
 
-    def __init__(self, page: Page):
-        super().__init__()
-        self.view_model = LoginViewModel()
+    def on_ui_update(self, message):
+        print("update ui= {}".format(message))
+        print("serverIP= {}".format(self.view_model.serverIP))
+        self.server_textfield.value = self.view_model.serverIP
+        self.update()
+
+    def did_mount(self):
+        print("mount")
+        self.page.pubsub.subscribe(self.on_ui_update)
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.view_model.searchGateway())
+
+    def will_unmount(self):
+        print("unmount")
+        self.page.pubsub.unsubscribe_all()
+        if self.loop:
+            self.loop.close()
+            self.loop = None
+
+    def _build(self):
         page.padding = 0
         self.expand = True
         self.bgcolor = colors.WHITE
@@ -60,13 +78,7 @@ class LoginPage(Container):
             # border_radius=30,
             border=border.only(bottom=BorderSide(width=1, color=colors.BLACK12)),
         )
-        self.server_box = Container(
-            margin=margin.only(left=10, right=10),
-            padding=padding.only(right=15),
-            alignment=alignment.center,
-            content=Row(
-                controls=[
-                    TextField(
+        self.server_textfield = TextField(
                         expand=True,
                         border=InputBorder.NONE,
                         # content_padding=padding.only(top=0, bottom=0, right=10, left=10),
@@ -79,7 +91,15 @@ class LoginPage(Container):
                             size=14,
                             color='black',
                         ),
-                    ),
+                        value=self.view_model.serverIP
+                    )
+        self.server_box = Container(
+            margin=margin.only(left=10, right=10),
+            padding=padding.only(right=15),
+            alignment=alignment.center,
+            content=Row(
+                controls=[
+                    self.server_textfield,
                     ProgressRing(width=15, height=15, color=cl_yellow, ),
                 ]
             ),
@@ -159,3 +179,11 @@ class LoginPage(Container):
                 ),
             ]
         )
+        return self.content
+
+    def __init__(self, page: Page):
+        super().__init__()
+        print("init login page")
+        self.view_model = LoginViewModel(page)
+        self.loop = None
+        self.page = page

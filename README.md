@@ -38,3 +38,6 @@ export PATH="/Users/james/.local/bin:$PATH"
  then run
  flet run src/app.py -d -r --assets assets
 ```
+
+4. [Update UI](https://github.com/flet-dev/flet/issues/403)    
+Flet does not do "data binding" or "templating". Instead, you either building new ElevatedButton controls for 3 and 4 items and add them a ListView or rebuild the entire ListView after changing btList.
